@@ -1,4 +1,6 @@
-package com.example.umascota.model;
+package com.example.umascota.model.mascota;
+
+import java.util.List;
 
 import jakarta.persistence.*;
 
@@ -19,25 +21,70 @@ public class Mascota {
 
     private Integer edad;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tamano")
+    private Tamano tamano;
+
     private String descripcion;
 
     @Column(name = "estado_salud")
     private String estadoSalud;
 
+    private boolean esterilizado;
+
+    @Enumerated(EnumType.STRING)
+    private Sexo sexo;
+
+    @Column(name = "foto_url")
     private String foto;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_publicacion", nullable = false)
-    private EstadoPublicacion estadoPublicacion;
+    @Column(name = "status_publicacion", nullable = false)
+    private StatusPublicacion statusPublicacion;
 
-    @Column(name = "id_usuario_publica", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "id_usuario_publica", referencedColumnName = "id_usuario", nullable = false)
     private Long idUsuarioPublica;
 
+    @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vacuna> vacunas;
+
+    @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FotoMascota> fotos;
+
+    @Column(name = "created_at", updatable = false, insertable = false)
+    private java.sql.Timestamp createdAt;
+
+
     // ENUM para estado_publicacion
-    public enum EstadoPublicacion {
-        disponible,
-        adoptado,
-        pendiente
+    public enum StatusPublicacion {
+        DISPONIBLE,
+        RESERVADO,
+        ADOPTADO,
+        NO_DISPONIBLE;
+    }
+
+    public enum Tamano{
+
+        GRANDE,
+        MEDIANO,
+        PEQUENO,
+        OTRO;
+    }
+
+    public enum Sexo{
+
+        MACHO,
+        HEMBRA,
+        OTRO;
+
+    }
+
+    public java.sql.Timestamp getCreatedAt(){
+        return createdAt;
+    }
+    public void setCreatedAt(java.sql.Timestamp createdAt){
+        this.createdAt = createdAt;
     }
 
     // Getters y Setters
@@ -105,12 +152,12 @@ public class Mascota {
         this.foto = foto;
     }
 
-    public EstadoPublicacion getEstadoPublicacion() {
-        return estadoPublicacion;
+    public StatusPublicacion getStatusPublicacion() {
+        return statusPublicacion;
     }
 
-    public void setEstadoPublicacion(EstadoPublicacion estadoPublicacion) {
-        this.estadoPublicacion = estadoPublicacion;
+    public void setStatusPublicacion(StatusPublicacion statusPublicacion) {
+        this.statusPublicacion = statusPublicacion;
     }
 
     public Long getIdUsuarioPublica() {
@@ -119,5 +166,19 @@ public class Mascota {
 
     public void setIdUsuarioPublica(Long idUsuarioPublica) {
         this.idUsuarioPublica = idUsuarioPublica;
+    }
+
+    public boolean getEsteralizado(){
+        return esterilizado;
+    }
+    public void setEsteralizado(boolean esterilizado){
+        this.esterilizado = esterilizado;
+    }
+
+    public Sexo getSexo(){
+        return sexo;
+    }
+    public void setSexo(Sexo sexo){
+        this.sexo = sexo;
     }
 }

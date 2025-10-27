@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import com.example.umascota.model.Usuario;
+import com.example.umascota.model.usuario.Usuario;
 import com.example.umascota.repository.UsuarioRepository;
 import com.example.umascota.util.PasswordUtil;
 import com.example.umascota.util.JwtUtil;

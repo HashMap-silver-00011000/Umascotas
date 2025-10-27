@@ -1,6 +1,6 @@
 package com.example.umascota.controller;
 
-import com.example.umascota.model.Mascota;
+import com.example.umascota.model.mascota.Mascota;
 import com.example.umascota.repository.MascotaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +44,7 @@ public class MascotaController {
             mascota.setDescripcion(mascotaDetails.getDescripcion());
             mascota.setEstadoSalud(mascotaDetails.getEstadoSalud());
             mascota.setFoto(mascotaDetails.getFoto());
-            mascota.setEstadoPublicacion(mascotaDetails.getEstadoPublicacion());
+            mascota.setStatusPublicacion(mascotaDetails.getStatusPublicacion());
             mascota.setIdUsuarioPublica(mascotaDetails.getIdUsuarioPublica());
             return ResponseEntity.ok(mascotaRepository.save(mascota));
         }).orElse(ResponseEntity.notFound().build());

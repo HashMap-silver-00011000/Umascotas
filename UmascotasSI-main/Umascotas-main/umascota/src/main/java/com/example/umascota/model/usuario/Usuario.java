@@ -1,7 +1,7 @@
-package com.example.umascota.model;
+package com.example.umascota.model.usuario;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "usuarios")
@@ -9,6 +9,7 @@ public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario")
     private Long idUsuario;
 
     @Column(name = "nombre_completo", nullable = false)
@@ -26,18 +27,30 @@ public class Usuario {
     @Column(name = "ciudad")
     private String ciudad;
 
+    @Column(name = "direccion")
+    private String direccion;
+
+    @Column(name = "documento_identidad")
+    private String documentoIdentidad;
+
+    @Column(name = "email_verified")
+    private boolean emailVerified;
+    
+    @Column(name = "notifications_enabled")
+    private boolean notificationsEnabled;
+
     @CreationTimestamp
     @Column(name = "fecha_registro", updatable = false)
-    private LocalDateTime fechaRegistro;
+    private java.sql.Timestamp fechaRegistro;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_usuario", nullable = false)
-    private TipoUsuario tipoUsuario;
+    @Column(name = "rol", nullable = false)
+    private Rol rol;
 
-    public enum TipoUsuario {
+    public enum Rol {
 
-        ADOPTANTE,
-        PUBLICADOR;
+        ADMIN,
+        USUARIO;
         
     }
 
@@ -93,19 +106,50 @@ public class Usuario {
         this.ciudad = ciudad;
     }
 
-    public LocalDateTime getFechaRegistro() {
+    public String getDireccion(){
+        return direccion;
+    }
+
+    public void setDireccion(String direccion){
+        this.direccion = direccion;
+    }
+
+    public String getDocumento(){
+        return documentoIdentidad;
+    }
+    public void setDocumento(String documentoIdentidad){
+        this.documentoIdentidad = documentoIdentidad;
+    }
+
+    public boolean getEmailVerified(){
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean email_verified){
+        this.emailVerified = email_verified;
+    }
+
+    public boolean getNotificationsEnabled(){
+        return notificationsEnabled;
+    }
+
+    public void setNotificationsEnabled(boolean notificationsEnabled){
+        this.notificationsEnabled = notificationsEnabled;
+    }
+
+    public java.sql.Timestamp getFechaRegistro() {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+    public void setFechaRegistro(java.sql.Timestamp fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
     }
 
-    public TipoUsuario getTipoUsuario() {
-        return tipoUsuario;
+    public Rol getTipoUsuario() {
+        return rol;
     }
 
-    public void setTipoUsuario(TipoUsuario tipoUsuario) {
-        this.tipoUsuario = tipoUsuario;
+    public void setTipoUsuario(Rol tipoUsuario) {
+        this.rol = tipoUsuario;
     }
 }
