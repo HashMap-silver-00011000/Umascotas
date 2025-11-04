@@ -181,4 +181,11 @@ public class Mascota {
     public void setSexo(Sexo sexo){
         this.sexo = sexo;
     }
+
+    public Tamano getTamano(){
+        return tamano;
+    }
+    public void setTamano(Tamano tamano){
+        this.tamano = tamano;
+    }
 }
