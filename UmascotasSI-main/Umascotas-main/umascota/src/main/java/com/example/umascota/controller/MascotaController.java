@@ -53,15 +53,11 @@ public class MascotaController {
     }
 
     //DELETE
-
     @DeleteMapping("/borrar-mascota/{idMascota}")
     public ResponseEntity<Void> borrarMascota(@PathVariable Long idMascota){
 
         mascotaService.borrarMascota(idMascota);
         return ResponseEntity.noContent().build();  
-
-    
-
 
     }
 
@@ -72,7 +68,6 @@ public class MascotaController {
         return ResponseEntity.ok(mascotas);
 
     }
-
 
     //PUT
     @PutMapping("/actualizar-mascota/{idMascota}")
