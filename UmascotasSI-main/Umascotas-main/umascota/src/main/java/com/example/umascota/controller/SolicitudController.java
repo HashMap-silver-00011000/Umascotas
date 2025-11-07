@@ -56,18 +56,18 @@ public class SolicitudController {
         return ResponseEntity.ok(solicitud_adopcion);
     }
 
-    //MostrarSolicitud
-    @GetMapping("/solicitud/{idSolicitud}")
-    public ResponseEntity<SolicitudAdopcion> mostrarSolicitud(@PathVariable Long idSolicitud){
+    /*MostrarSolicitud
+    @GetMapping("/solicitud/{id}")
+    public ResponseEntity<SolicitudAdopcion> mostrarSolicitud(@PathVariable Long id){
         
-        Optional<SolicitudAdopcion> solicitud_adopcion  = solicitudService.mostrarSolicitud(idSolicitud);
+        Optional<SolicitudAdopcion> solicitudAdopcion = solicitudService.mostrarSolicitud(id);
 
-        if(solicitud_adopcion.isPresent()){
-            return ResponseEntity.ok(solicitud_adopcion.get());
+        if(solicitudAdopcion.isPresent()){
+            return ResponseEntity.ok(solicitudAdopcion.get());
         }else
             return ResponseEntity.notFound().build();
         
     }
-
+    */
 
 }

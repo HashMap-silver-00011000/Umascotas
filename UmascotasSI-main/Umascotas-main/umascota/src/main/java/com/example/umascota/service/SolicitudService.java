@@ -70,8 +70,8 @@ public class SolicitudService {
     }
 
     //Mostrar Solicitud
-    public Optional<SolicitudAdopcion> mostrarSolicitud(Long id){
-        return solicitudRepository.findByIdSolicitud(id);
+    public Optional<SolicitudAdopcion> mostrarSolicitud(Long idSolicitud){
+        return solicitudRepository.findByIdSolicitud(idSolicitud);
     }
 
 }
