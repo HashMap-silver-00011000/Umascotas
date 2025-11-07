@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.umascota.model.mascota.Mascota;
+import com.example.umascota.model.usuario.Usuario;
 import com.example.umascota.repository.MascotaRepository;
+import com.example.umascota.repository.UsuarioRepository;
 
 @Service
 public class Mascota2Service {
@@ -15,12 +17,24 @@ public class Mascota2Service {
     @Autowired
     private MascotaRepository mascotaRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     //Crear Mascota
     public Mascota crearMascota(Mascota mascota){
 
         if (mascotaRepository.existsByNombreIgnoreCase(mascota.getNombre())) {
             throw new IllegalArgumentException("La mascota ya está registrada");
         }else{
+            // Si se proporciona idUsuarioPublica, buscar y establecer la relación
+            if (mascota.getIdUsuarioPublica() != null) {
+                Optional<Usuario> usuarioOpt = usuarioRepository.findByIdUsuario(mascota.getIdUsuarioPublica());
+                if (usuarioOpt.isPresent()) {
+                    mascota.setUsuarioPublica(usuarioOpt.get());
+                } else {
+                    throw new IllegalArgumentException("Usuario no encontrado con ID: " + mascota.getIdUsuarioPublica());
+                }
+            }
             return mascotaRepository.save(mascota);  
         }
 

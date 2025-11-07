@@ -2,7 +2,11 @@ package com.example.umascota.model.mascota;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "mascotas")
@@ -13,8 +17,10 @@ public class Mascota {
     @Column(name = "id_mascota")
     private Long idMascota;
 
+    @Column(nullable = false)
     private String nombre;
 
+    @Column(nullable = false)
     private String especie;
 
     private String raza;
@@ -43,25 +49,33 @@ public class Mascota {
     private StatusPublicacion statusPublicacion;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario_publica", referencedColumnName = "id_usuario", nullable = false)
+    @JoinColumn(name = "id_usuario_publica", referencedColumnName = "id_usuario", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "contrasena", "fechaRegistro"})
+    private com.example.umascota.model.usuario.Usuario usuarioPublica;
+    
+    // Campo auxiliar para facilitar el acceso al ID
+    @Transient
     private Long idUsuarioPublica;
 
     @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Vacuna> vacunas;
 
     @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<FotoMascota> fotos;
 
-    @Column(name = "created_at", updatable = false, insertable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
     private java.sql.Timestamp createdAt;
 
 
     // ENUM para estado_publicacion
     public enum StatusPublicacion {
         DISPONIBLE,
-        RESERVADO,
-        ADOPTADO,
-        NO_DISPONIBLE;
+        RESERVADA,
+        ADOPTADA,
+        NO_DISPONIBLE
     }
 
     public enum Tamano{
@@ -160,12 +174,27 @@ public class Mascota {
         this.statusPublicacion = statusPublicacion;
     }
 
+    @com.fasterxml.jackson.annotation.JsonGetter("idUsuarioPublica")
     public Long getIdUsuarioPublica() {
+        if (usuarioPublica != null) {
+            return usuarioPublica.getIdUsuario();
+        }
         return idUsuarioPublica;
     }
 
     public void setIdUsuarioPublica(Long idUsuarioPublica) {
         this.idUsuarioPublica = idUsuarioPublica;
+    }
+    
+    public com.example.umascota.model.usuario.Usuario getUsuarioPublica() {
+        return usuarioPublica;
+    }
+    
+    public void setUsuarioPublica(com.example.umascota.model.usuario.Usuario usuarioPublica) {
+        this.usuarioPublica = usuarioPublica;
+        if (usuarioPublica != null) {
+            this.idUsuarioPublica = usuarioPublica.getIdUsuario();
+        }
     }
 
     public boolean getEsteralizado(){

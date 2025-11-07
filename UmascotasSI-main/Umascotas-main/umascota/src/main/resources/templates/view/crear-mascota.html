@@ -109,9 +109,10 @@
                         <select id="estadoPublicacion" name="estadoPublicacion" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Seleccionar estado</option>
-                            <option value="disponible">Disponible</option>
-                            <option value="adoptado">Adoptado</option>
-                            <option value="pendiente">Pendiente</option>
+                            <option value="DISPONIBLE">Disponible</option>
+                            <option value="RESERVADA">Reservada</option>
+                            <option value="ADOPTADA">Adoptada</option>
+                            <option value="NO_DISPONIBLE">No Disponible</option>
                         </select>
                     </div>
                 </div>
@@ -136,8 +137,8 @@
                            placeholder="https://ejemplo.com/foto-mascota.jpg">
                 </div>
 
-                <!-- ID Usuario (oculto, se puede obtener del contexto de autenticación) -->
-                <input type="hidden" id="idUsuarioPublica" name="idUsuarioPublica" value="1">
+                <!-- ID Usuario (oculto, se obtiene del localStorage) -->
+                <input type="hidden" id="idUsuarioPublica" name="idUsuarioPublica">
 
                 <!-- Botones -->
                 <div class="flex flex-col sm:flex-row gap-4 pt-6">
@@ -164,9 +165,26 @@
     </div>
 
     <script>
+        // Cargar ID de usuario al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const idUsuario = localStorage.getItem('idUsuario');
+            if (idUsuario) {
+                document.getElementById('idUsuarioPublica').value = idUsuario;
+            } else {
+                // Si no hay usuario autenticado, redirigir al login
+                alert('Debes iniciar sesión para crear una mascota');
+                window.location.href = '/login';
+            }
+        });
+
         // Función para limpiar el formulario
         function limpiarFormulario() {
             document.getElementById('mascotaForm').reset();
+            // Restaurar el ID de usuario después de limpiar
+            const idUsuario = localStorage.getItem('idUsuario');
+            if (idUsuario) {
+                document.getElementById('idUsuarioPublica').value = idUsuario;
+            }
             ocultarMensaje();
         }
 
@@ -201,7 +219,19 @@
             }
             
             // Convertir idUsuarioPublica a número
-            mascotaData.idUsuarioPublica = parseInt(mascotaData.idUsuarioPublica);
+            if (mascotaData.idUsuarioPublica) {
+                mascotaData.idUsuarioPublica = parseInt(mascotaData.idUsuarioPublica);
+            } else {
+                mostrarMensaje('Error: No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.', 'error');
+                return;
+            }
+            
+            // Asegurar que statusPublicacion esté en mayúsculas
+            if (mascotaData.statusPublicacion) {
+                mascotaData.statusPublicacion = mascotaData.statusPublicacion.toUpperCase();
+            } else {
+                mascotaData.statusPublicacion = 'DISPONIBLE'; // Valor por defecto
+            }
             
             try {
                 const response = await fetch('/api/mascotas', {

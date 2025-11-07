@@ -49,4 +49,9 @@ public class UsuarioService {
     public String obtenerCorreoDesdeToken(String token) {
         return JwtUtil.getSubjectFromToken(token);
     }
+    
+    // Obtener usuario por correo electrónico
+    public Usuario obtenerUsuarioPorCorreo(String correoElectronico) {
+        return usuarioRepository.findByCorreoElectronico(correoElectronico.trim().toLowerCase());
+    }
 }

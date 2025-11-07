@@ -34,12 +34,17 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
         try {
             String token = usuarioService.login(usuario.getCorreoElectronico(), usuario.getContrasena());
+            Usuario usuarioDB = usuarioService.obtenerUsuarioPorCorreo(usuario.getCorreoElectronico());
             Map<String, Object> respuesta = new HashMap<>();
             respuesta.put("token", token);
             respuesta.put("mensaje", "Inicio de sesión exitoso");
+            respuesta.put("rol", usuarioDB.getTipoUsuario().name());
+            respuesta.put("idUsuario", usuarioDB.getIdUsuario());
             return ResponseEntity.ok(respuesta);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(401).body(error);
         }
     }
 

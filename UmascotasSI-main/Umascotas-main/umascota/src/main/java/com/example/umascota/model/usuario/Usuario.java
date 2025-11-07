@@ -48,15 +48,8 @@ public class Usuario {
     private Rol rol;
 
     public enum Rol {
-
         ADMIN,
-        USUARIO;
-
-        Object stream() {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'stream'");
-        }
-        
+        USUARIO
     }
 
     public Usuario() {

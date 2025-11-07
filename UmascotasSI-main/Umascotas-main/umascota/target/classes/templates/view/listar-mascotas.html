@@ -74,9 +74,10 @@
                         <select id="filtroEstado" onchange="filtrarMascotas()"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             <option value="">Todos los estados</option>
-                            <option value="disponible">Disponible</option>
-                            <option value="adoptado">Adoptado</option>
-                            <option value="pendiente">Pendiente</option>
+                            <option value="DISPONIBLE">Disponible</option>
+                            <option value="RESERVADA">Reservada</option>
+                            <option value="ADOPTADA">Adoptada</option>
+                            <option value="NO_DISPONIBLE">No Disponible</option>
                         </select>
                     </div>
                     <div>
@@ -141,9 +142,13 @@
 
     <script>
         let todasLasMascotas = [];
+        let esAdmin = false;
 
         // Cargar mascotas al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
+            // Verificar si el usuario es admin
+            const rol = localStorage.getItem('rol');
+            esAdmin = rol === 'ADMIN';
             cargarMascotas();
         });
 
@@ -155,13 +160,17 @@
             try {
                 const response = await fetch('/api/mascotas');
                 if (response.ok) {
-                    todasLasMascotas = await response.json();
+                    const data = await response.json();
+                    // Asegurar que sea un array
+                    todasLasMascotas = Array.isArray(data) ? data : [];
                     mostrarMascotas(todasLasMascotas);
                 } else {
-                    mostrarError('Error al cargar las mascotas. Inténtalo de nuevo.');
+                    const errorText = await response.text();
+                    mostrarError('Error al cargar las mascotas: ' + errorText);
                 }
             } catch (error) {
-                mostrarError('Error de conexión: ' + error.message);
+                console.error('Error cargando mascotas:', error);
+                mostrarError('Error de conexión: ' + (error.message || 'Error desconocido'));
             } finally {
                 mostrarLoading(false);
             }
@@ -172,29 +181,51 @@
             const container = document.getElementById('mascotasContainer');
             const sinMascotas = document.getElementById('sinMascotas');
             
-            if (mascotas.length === 0) {
+            // Filtrar mascotas adoptadas si no es admin
+            let mascotasFiltradas = mascotas;
+            if (!esAdmin) {
+                mascotasFiltradas = mascotas.filter(mascota => {
+                    const estado = (mascota.statusPublicacion || mascota.estadoPublicacion || '').toUpperCase();
+                    // Solo mostrar mascotas que NO estén adoptadas
+                    return estado !== 'ADOPTADA';
+                });
+            }
+            
+            if (mascotasFiltradas.length === 0) {
                 container.innerHTML = '';
                 sinMascotas.classList.remove('hidden');
                 return;
             }
             
             sinMascotas.classList.add('hidden');
-            container.innerHTML = mascotas.map(mascota => crearTarjetaMascota(mascota)).join('');
+            container.innerHTML = mascotasFiltradas.map(mascota => crearTarjetaMascota(mascota)).join('');
         }
 
         // Función para crear una tarjeta de mascota
         function crearTarjetaMascota(mascota) {
+            // Validar que mascota existe
+            if (!mascota) {
+                console.error('Mascota es null o undefined');
+                return '';
+            }
+
             const estadoColor = {
-                'disponible': 'bg-green-100 text-green-800',
-                'adoptado': 'bg-blue-100 text-blue-800',
-                'pendiente': 'bg-yellow-100 text-yellow-800'
+                'DISPONIBLE': 'bg-green-100 text-green-800',
+                'ADOPTADA': 'bg-blue-100 text-blue-800',
+                'RESERVADA': 'bg-yellow-100 text-yellow-800',
+                'NO_DISPONIBLE': 'bg-gray-100 text-gray-800'
             };
 
             const estadoIcon = {
-                'disponible': 'fas fa-check-circle',
-                'adoptado': 'fas fa-heart',
-                'pendiente': 'fas fa-clock'
+                'DISPONIBLE': 'fas fa-check-circle',
+                'ADOPTADA': 'fas fa-heart',
+                'RESERVADA': 'fas fa-clock',
+                'NO_DISPONIBLE': 'fas fa-ban'
             };
+            
+            // Normalizar el estado a mayúsculas - manejar ambos nombres posibles
+            const estadoValue = mascota.statusPublicacion || mascota.estadoPublicacion || 'NO_DISPONIBLE';
+            const estado = String(estadoValue).toUpperCase();
 
             return `
                 <div class="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
@@ -206,15 +237,15 @@
                             </div>`
                         }
                         <div class="absolute top-2 right-2">
-                            <span class="px-2 py-1 rounded-full text-xs font-medium ${estadoColor[mascota.estadoPublicacion]}">
-                                <i class="${estadoIcon[mascota.estadoPublicacion]} mr-1"></i>
-                                ${mascota.estadoPublicacion.charAt(0).toUpperCase() + mascota.estadoPublicacion.slice(1)}
+                            <span class="px-2 py-1 rounded-full text-xs font-medium ${estadoColor[estado] || 'bg-gray-100 text-gray-800'}">
+                                <i class="${estadoIcon[estado] || 'fas fa-question'} mr-1"></i>
+                                ${estado === 'DISPONIBLE' ? 'Disponible' : estado === 'ADOPTADA' ? 'Adoptada' : estado === 'RESERVADA' ? 'Reservada' : estado === 'NO_DISPONIBLE' ? 'No Disponible' : estado}
                             </span>
                         </div>
                     </div>
                     
                     <div class="p-6">
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">${mascota.nombre}</h3>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">${mascota.nombre || 'Sin nombre'}</h3>
                         <div class="space-y-2 text-sm text-gray-600">
                             <p><i class="fas fa-paw mr-2"></i><strong>Especie:</strong> ${mascota.especie || 'No especificada'}</p>
                             <p><i class="fas fa-dna mr-2"></i><strong>Raza:</strong> ${mascota.raza || 'No especificada'}</p>
@@ -227,18 +258,16 @@
                         }
                         
                         <div class="mt-4 flex space-x-2">
-                            <button onclick="verDetalles(${mascota.idMascota})" 
-                                    class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm font-medium">
+                            <a href="/ver-mascota/${mascota.idMascota}" 
+                               class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm font-medium text-center">
                                 <i class="fas fa-eye mr-1"></i>Ver Detalles
-                            </button>
-                            <button onclick="editarMascota(${mascota.idMascota})" 
-                                    class="flex-1 bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 text-sm font-medium">
-                                <i class="fas fa-edit mr-1"></i>Editar
-                            </button>
-                            <button onclick="eliminarMascota(${mascota.idMascota}, '${mascota.nombre}')" 
-                                    class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 text-sm font-medium">
-                                <i class="fas fa-trash mr-1"></i>Eliminar
-                            </button>
+                            </a>
+                            ${estado === 'DISPONIBLE' ? 
+                                `<a href="/ver-mascota/${mascota.idMascota}" 
+                                    class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 text-sm font-medium text-center">
+                                    <i class="fas fa-heart mr-1"></i>Adoptar
+                                </a>` : ''
+                            }
                         </div>
                     </div>
                 </div>
@@ -251,10 +280,26 @@
             const filtroEstado = document.getElementById('filtroEstado').value;
             const buscarNombre = document.getElementById('buscarNombre').value.toLowerCase();
 
-            const mascotasFiltradas = todasLasMascotas.filter(mascota => {
-                const cumpleEspecie = !filtroEspecie || mascota.especie === filtroEspecie;
-                const cumpleEstado = !filtroEstado || mascota.estadoPublicacion === filtroEstado;
-                const cumpleNombre = !buscarNombre || mascota.nombre.toLowerCase().includes(buscarNombre);
+            let mascotasParaFiltrar = todasLasMascotas;
+            
+            // Si no es admin, filtrar mascotas adoptadas primero
+            if (!esAdmin) {
+                mascotasParaFiltrar = todasLasMascotas.filter(mascota => {
+                    const estado = (mascota.statusPublicacion || mascota.estadoPublicacion || '').toUpperCase();
+                    return estado !== 'ADOPTADA';
+                });
+            }
+
+            const mascotasFiltradas = mascotasParaFiltrar.filter(mascota => {
+                if (!mascota) return false;
+                
+                const cumpleEspecie = !filtroEspecie || (mascota.especie && mascota.especie === filtroEspecie);
+                const estadoValue = mascota.statusPublicacion || mascota.estadoPublicacion || 'NO_DISPONIBLE';
+                const estadoMascota = String(estadoValue).toUpperCase();
+                const filtroEstadoUpper = filtroEstado ? String(filtroEstado).toUpperCase() : '';
+                const cumpleEstado = !filtroEstado || estadoMascota === filtroEstadoUpper;
+                const nombreMascota = mascota.nombre ? String(mascota.nombre).toLowerCase() : '';
+                const cumpleNombre = !buscarNombre || nombreMascota.includes(buscarNombre);
                 
                 return cumpleEspecie && cumpleEstado && cumpleNombre;
             });
@@ -262,43 +307,9 @@
             mostrarMascotas(mascotasFiltradas);
         }
 
-        // Función para ver detalles de una mascota
+        // Función para ver detalles de una mascota (redirige a la vista completa)
         function verDetalles(idMascota) {
-            const mascota = todasLasMascotas.find(m => m.idMascota === idMascota);
-            if (!mascota) return;
-
-            const modalContenido = document.getElementById('modalContenido');
-            modalContenido.innerHTML = `
-                <div class="space-y-4">
-                    <div class="text-center">
-                        ${mascota.foto ? 
-                            `<img src="${mascota.foto}" alt="${mascota.nombre}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4">` :
-                            `<div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fas fa-paw text-4xl text-gray-400"></i>
-                            </div>`
-                        }
-                        <h2 class="text-2xl font-bold text-gray-800">${mascota.nombre}</h2>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div><strong>Especie:</strong> ${mascota.especie || 'No especificada'}</div>
-                        <div><strong>Raza:</strong> ${mascota.raza || 'No especificada'}</div>
-                        <div><strong>Edad:</strong> ${mascota.edad ? mascota.edad + ' años' : 'No especificada'}</div>
-                        <div><strong>Estado de Salud:</strong> ${mascota.estadoSalud || 'No especificada'}</div>
-                        <div><strong>Estado de Publicación:</strong> ${mascota.estadoPublicacion}</div>
-                        <div><strong>ID Usuario:</strong> ${mascota.idUsuarioPublica}</div>
-                    </div>
-                    
-                    ${mascota.descripcion ? 
-                        `<div>
-                            <strong>Descripción:</strong>
-                            <p class="mt-1 text-gray-700">${mascota.descripcion}</p>
-                        </div>` : ''
-                    }
-                </div>
-            `;
-            
-            document.getElementById('modalDetalles').classList.remove('hidden');
+            window.location.href = `/ver-mascota/${idMascota}`;
         }
 
         // Función para cerrar modal

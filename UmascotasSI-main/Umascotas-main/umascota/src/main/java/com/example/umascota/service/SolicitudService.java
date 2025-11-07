@@ -38,8 +38,23 @@ public class SolicitudService {
             throw new RuntimeException("Usuario o Mascota no encontrados");
         }
 
+        // Establecer relaciones
         solicitudAdopcion.setUsuarioAdoptante(usuario.get());
         solicitudAdopcion.setMascotaSolicitada(mascota.get());
+
+        // Establecer estado por defecto si no viene
+        if (solicitudAdopcion.getEstadoSolicitud() == null) {
+            solicitudAdopcion.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.PENDIENTE);
+        }
+
+        // Establecer fecha de solicitud si no viene
+        if (solicitudAdopcion.getFechaSolicitud() == null) {
+            solicitudAdopcion.setFechaSolicitud(new java.sql.Timestamp(System.currentTimeMillis()));
+        }
+
+        // Asegurar que usuarioResolvio sea null al crear (se establecerá cuando se resuelva)
+        solicitudAdopcion.setUsuarioResolvio(null);
+        solicitudAdopcion.setFechaResolucion(null);
 
         return solicitudRepository.save(solicitudAdopcion);
 
@@ -55,14 +70,33 @@ public class SolicitudService {
     public Optional<SolicitudAdopcion> aceptarSolicitud(Long idSolicitud, Long usuarioResolvio, SolicitudAdopcion datoRespuesta){
     
         Optional<Usuario> usuario = usuarioRepository.findByIdUsuario(usuarioResolvio);
+        
+        if (usuario.isEmpty()) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        
         // Usamos el método ESTÁNDAR findById()
         return solicitudRepository.findById(idSolicitud)
             .map(solicitudAdopcion -> {
             
                 solicitudAdopcion.setEstadoSolicitud(datoRespuesta.getEstadoSolicitud());
                 solicitudAdopcion.setUsuarioResolvio(usuario.get());
+                
+                // Establecer fecha de resolución si no está establecida
+                if (datoRespuesta.getFechaResolucion() != null) {
+                    solicitudAdopcion.setFechaResolucion(datoRespuesta.getFechaResolucion());
+                } else {
+                    solicitudAdopcion.setFechaResolucion(new java.sql.Timestamp(System.currentTimeMillis()));
+                }
 
-                //Agregar condicional para guardar en laa tabla de adopcion
+                // Si la solicitud es ACEPTADA, actualizar el estado de la mascota a ADOPTADA
+                if (datoRespuesta.getEstadoSolicitud() == SolicitudAdopcion.EstadoSolicitud.ACEPTADA) {
+                    Mascota mascota = solicitudAdopcion.getMascotaSolicitada();
+                    if (mascota != null) {
+                        mascota.setStatusPublicacion(Mascota.StatusPublicacion.ADOPTADA);
+                        mascotaRepository.save(mascota);
+                    }
+                }
 
                 // Persistencia
                 return solicitudRepository.save(solicitudAdopcion); 

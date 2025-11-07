@@ -37,4 +37,46 @@ public class ViewController {
     public String listarMascotas() {
         return "view/listar-mascotas";
     }
+
+    // Vista para listar todas las solicitudes
+    @GetMapping("/listar-solicitudes")
+    public String listarSolicitudes() {
+        return "view/listar-solicitudes";
+    }
+
+    // Vista para ver una solicitud específica
+    @GetMapping("/ver-solicitud/{id}")
+    public String verSolicitud() {
+        return "view/ver-solicitud";
+    }
+
+    // Vista para crear una solicitud de adopción
+    @GetMapping("/crear-solicitud/{idMascota}")
+    public String crearSolicitud() {
+        return "view/crear-solicitud";
+    }
+
+    // Vista para tomar decisión sobre una solicitud
+    @GetMapping("/decision-solicitud/{idSolicitud}")
+    public String decisionSolicitud() {
+        return "view/decision-solicitud";
+    }
+
+    // Dashboard para usuarios
+    @GetMapping("/dashboard-usuario")
+    public String dashboardUsuario() {
+        return "view/dashboard-usuario";
+    }
+
+    // Dashboard para administradores
+    @GetMapping("/dashboard-admin")
+    public String dashboardAdmin() {
+        return "view/dashboard-admin";
+    }
+
+    // Vista para ver detalles de una mascota
+    @GetMapping("/ver-mascota/{id}")
+    public String verMascota() {
+        return "view/ver-mascota";
+    }
 }

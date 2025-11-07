@@ -5,11 +5,9 @@ import com.example.umascota.model.mascota.Mascota;
 import com.example.umascota.model.usuario.Usuario;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
-import java.util.Optional;
-
 
 @Entity
-@Table(name = "solicitud_adopcion")
+@Table(name = "solicitudes_adopcion")
 public class SolicitudAdopcion {
 
     @Id
@@ -22,12 +20,8 @@ public class SolicitudAdopcion {
     private Mascota mascotaSolicitada;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario_adoptante", referencedColumnName = "id_usuario",  nullable = false)
+    @JoinColumn(name = "id_usuario_adoptante", referencedColumnName = "id_usuario", nullable = false)
     private Usuario usuarioAdoptante;
-
-    @ManyToOne
-    @JoinColumn(name = "id_usuario_resolvio" , referencedColumnName = "id_usuario", nullable = false)
-    private Usuario usuarioResolvio;
 
     @Column(name = "fecha_solicitud", nullable = false)
     private Timestamp fechaSolicitud;
@@ -36,16 +30,21 @@ public class SolicitudAdopcion {
     @Column(name = "estado_solicitud", nullable = false)
     private EstadoSolicitud estadoSolicitud;
 
-    @Column(name = "mensaje_adoptante", length = 500)
+    @Column(name = "mensaje_adoptante", columnDefinition = "TEXT")
     private String mensajeAdoptante;
 
     @Column(name = "fecha_resolucion")
     private Timestamp fechaResolucion;
 
+    @ManyToOne
+    @JoinColumn(name = "id_usuario_resolvio", referencedColumnName = "id_usuario", nullable = true)
+    private Usuario usuarioResolvio;
+
     public enum EstadoSolicitud {
         PENDIENTE,
-        APROBADA,
-        RECHAZADA
+        ACEPTADA,
+        RECHAZADA,
+        CANCELADA
     }
 
 

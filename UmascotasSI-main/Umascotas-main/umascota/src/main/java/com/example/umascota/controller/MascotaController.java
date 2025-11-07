@@ -28,10 +28,34 @@ public class MascotaController {
 
     public MascotaController(Mascota2Service mascotaService){this.mascotaService = mascotaService;}
 
-    //GET
+    //GET - Endpoint REST estándar
+    @GetMapping
+    public ResponseEntity<List<Mascota>> obtenerMascotas(){
+        List<Mascota> mascotas = mascotaService.obtenerTodas();
+        return ResponseEntity.ok(mascotas);
+    }
+
+    //GET - Endpoint REST estándar por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Mascota> obtenerMascotaPorId(@PathVariable Long id){
+        Optional<Mascota> mascota = mascotaService.obtenerPorId(id);
+        if(mascota.isPresent()){
+            return ResponseEntity.ok(mascota.get());
+        }else { 
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    //POST - Endpoint REST estándar
+    @PostMapping
+    public ResponseEntity<Mascota> crearMascota(@RequestBody Mascota mascota){
+        Mascota nuevaMascota = mascotaService.crearMascota(mascota);
+        return new ResponseEntity<>(nuevaMascota, HttpStatus.CREATED);
+    }
+
+    //GET - Endpoint legacy
     @GetMapping("/obtener-mascota/{id}")
     public ResponseEntity<Mascota> obtenerMascota(@PathVariable Long id){
-
         Optional <Mascota> mascota = mascotaService.obtenerPorId(id);
         if(mascota.isPresent()){
             return ResponseEntity.ok(mascota.get());
@@ -40,30 +64,27 @@ public class MascotaController {
         }
     }
 
-    @PostMapping("/crear-mascota")
-    public ResponseEntity<Mascota> crearMascota(@RequestBody Mascota mascota){
-        
-        Mascota nuevaMascota = mascotaService.crearMascota(mascota);
-        return new ResponseEntity<>(nuevaMascota, HttpStatus.CREATED);
+  
 
+    //DELETE - Endpoint REST estándar
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> borrarMascotaPorId(@PathVariable Long id){
+        mascotaService.borrarMascota(id);
+        return ResponseEntity.noContent().build();
     }
 
-    //DELETE
-
+    //DELETE - Endpoint legacy
     @DeleteMapping("/borrar-mascota/{idMascota}")
     public ResponseEntity<Void> borrarMascota(@PathVariable Long idMascota){
-
         mascotaService.borrarMascota(idMascota);
         return ResponseEntity.noContent().build();  
-
     }
 
+    //GET - Endpoint legacy
     @GetMapping("/obtener-mascotas")
-    public ResponseEntity<List<Mascota>> obtenerMascotas(){
-
+    public ResponseEntity<List<Mascota>> obtenerMascotasLegacy(){
         List<Mascota> mascotas = mascotaService.obtenerTodas();
         return ResponseEntity.ok(mascotas);
-
     }
 
 

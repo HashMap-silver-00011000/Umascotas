@@ -1,25 +1,23 @@
 package com.example.umascota.controller;
 
 import java.util.List;
+import java.util.Optional;
 
-import org.apache.el.stream.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.umascota.model.adopcion.SolicitudAdopcion;
 import com.example.umascota.service.SolicitudService;
-import com.example.umascota.util.UserDetailsImpl;
 
-@Controller
-@RestController("/Solicitud")
+@RestController
+@RequestMapping("/api/solicitudes")
 public class SolicitudController {
 
     private final SolicitudService solicitudService;
@@ -28,24 +26,66 @@ public class SolicitudController {
     
     //Crear solicitud "Usuario_adoptante"
     @PostMapping("/solicitud-mascota/{idMascota}")
-    public ResponseEntity<SolicitudAdopcion> crearSolicitud(@PathVariable Long idMascota, @RequestBody SolicitudAdopcion datosSolicitud,
-    @AuthenticationPrincipal UserDetailsImpl usuarioAutenticado ){
+    public ResponseEntity<?> crearSolicitud(@PathVariable Long idMascota, @RequestBody java.util.Map<String, Object> datosSolicitud){
+        try {
+            // Obtener ID de usuario del body o usar un valor por defecto si no viene
+            Long usuarioAutenticadoId = null;
+            if (datosSolicitud.containsKey("idUsuario")) {
+                usuarioAutenticadoId = Long.valueOf(datosSolicitud.get("idUsuario").toString());
+            } else {
+                return ResponseEntity.badRequest().body("ID de usuario requerido");
+            }
 
-        Long usuarioAutenticadoId = usuarioAutenticado.getId();
-        SolicitudAdopcion  solicitudAdopcion = solicitudService.crearSolicitudAdopcion(idMascota, usuarioAutenticadoId, datosSolicitud);
+            // Crear objeto SolicitudAdopcion
+            SolicitudAdopcion solicitudAdopcion = new SolicitudAdopcion();
+            if (datosSolicitud.containsKey("mensajeAdoptante")) {
+                solicitudAdopcion.setMensajeAdoptante(datosSolicitud.get("mensajeAdoptante").toString());
+            }
 
-        return new ResponseEntity<>(solicitudAdopcion, HttpStatus.CREATED);
+            SolicitudAdopcion solicitudCreada = solicitudService.crearSolicitudAdopcion(idMascota, usuarioAutenticadoId, solicitudAdopcion);
+            return new ResponseEntity<>(solicitudCreada, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al crear la solicitud: " + e.getMessage());
+        }
     }
 
     //Aceptar Solicitud "Usuario_Resuelve"
     @PutMapping("/decision-mascota/{idSolicitud}")
-    public ResponseEntity<SolicitudAdopcion> decisionSolicitud(@PathVariable Long idSolicitud, @RequestBody SolicitudAdopcion datosSolicitud,
-    @AuthenticationPrincipal UserDetailsImpl usuarioAutenticado){
+    public ResponseEntity<?> decisionSolicitud(@PathVariable Long idSolicitud, @RequestBody java.util.Map<String, Object> datosSolicitud){
+        try {
+            // Obtener ID de usuario del body
+            Long usuarioAutenticadoId = null;
+            if (datosSolicitud.containsKey("idUsuario")) {
+                usuarioAutenticadoId = Long.valueOf(datosSolicitud.get("idUsuario").toString());
+            } else {
+                return ResponseEntity.badRequest().body("ID de usuario requerido");
+            }
 
-        Long usuarioAutenticadoId = usuarioAutenticado.getId();
-        SolicitudAdopcion  solicitudAdopcion = solicitudService.crearSolicitudAdopcion(idSolicitud, usuarioAutenticadoId, datosSolicitud);
+            // Crear objeto SolicitudAdopcion con los datos
+            SolicitudAdopcion solicitudAdopcion = new SolicitudAdopcion();
+            if (datosSolicitud.containsKey("estadoSolicitud")) {
+                String estadoStr = datosSolicitud.get("estadoSolicitud").toString().toUpperCase();
+                try {
+                    solicitudAdopcion.setEstadoSolicitud(SolicitudAdopcion.EstadoSolicitud.valueOf(estadoStr));
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body("Estado de solicitud inválido: " + estadoStr);
+                }
+            }
 
-        return ResponseEntity.ok(solicitudAdopcion);
+            java.util.Optional<SolicitudAdopcion> solicitudOpt = solicitudService.aceptarSolicitud(idSolicitud, usuarioAutenticadoId, solicitudAdopcion);
+            
+            if (solicitudOpt.isPresent()) {
+                return ResponseEntity.ok(solicitudOpt.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la decisión: " + e.getMessage());
+        }
     }
 
     //Mostrar Solicitudes
@@ -56,7 +96,7 @@ public class SolicitudController {
         return ResponseEntity.ok(solicitud_adopcion);
     }
 
-    /*MostrarSolicitud
+    //Mostrar Solicitud
     @GetMapping("/solicitud/{id}")
     public ResponseEntity<SolicitudAdopcion> mostrarSolicitud(@PathVariable Long id){
         
@@ -68,6 +108,6 @@ public class SolicitudController {
             return ResponseEntity.notFound().build();
         
     }
-    */
+    
 
 }
