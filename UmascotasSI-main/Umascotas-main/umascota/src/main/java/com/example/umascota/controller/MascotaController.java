@@ -4,9 +4,8 @@ package com.example.umascota.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.catalina.connector.Response;
+
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,13 +33,11 @@ public class MascotaController {
     public ResponseEntity<Mascota> obtenerMascota(@PathVariable Long id){
 
         Optional <Mascota> mascota = mascotaService.obtenerPorId(id);
-        
         if(mascota.isPresent()){
             return ResponseEntity.ok(mascota.get());
         }else { 
             return ResponseEntity.notFound().build();
         }
-        
     }
 
     @PostMapping("/crear-mascota")
@@ -48,7 +45,6 @@ public class MascotaController {
         
         Mascota nuevaMascota = mascotaService.crearMascota(mascota);
         return new ResponseEntity<>(nuevaMascota, HttpStatus.CREATED);
-
 
     }
 
@@ -59,9 +55,6 @@ public class MascotaController {
 
         mascotaService.borrarMascota(idMascota);
         return ResponseEntity.noContent().build();  
-
-    
-
 
     }
 

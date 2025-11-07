@@ -5,6 +5,7 @@ import com.example.umascota.model.mascota.Mascota;
 import com.example.umascota.model.usuario.Usuario;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 
 @Entity
@@ -56,7 +57,7 @@ public class SolicitudAdopcion {
     public void setMascotaSolicitada(Mascota mascotaSolicitada) { this.mascotaSolicitada = mascotaSolicitada; }
 
     public Usuario getUsuarioAdoptante() { return usuarioAdoptante; }
-    public void setUsuarioAdoptante(Usuario usuarioAdoptante) { this.usuarioAdoptante = usuarioAdoptante; }
+    public void setUsuarioAdoptante(Usuario usuario) { this.usuarioAdoptante = usuario; }
 
     public Usuario getUsuarioResolvio() { return usuarioResolvio; }
     public void setUsuarioResolvio(Usuario usuarioResolvio) { this.usuarioResolvio = usuarioResolvio; }
