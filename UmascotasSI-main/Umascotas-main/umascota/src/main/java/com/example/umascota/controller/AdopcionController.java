@@ -1,9 +1,7 @@
 package com.example.umascota.controller;
 
-
-import java.util.*;
-
-
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,54 +13,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.umascota.model.adopcion.Adopcion;
-import com.example.umascota.repository.AdopcionRepository;
 import com.example.umascota.service.AdopcionService;
-
 
 @RestController
 @RequestMapping("/api/adopciones")
 public class AdopcionController {
 
-    private final AdopcionRepository adopcionRepository;
-    
     private final AdopcionService adopcionService;
 
-    public AdopcionController(AdopcionService adopcionService, AdopcionRepository adopcionRepository){this.adopcionService = adopcionService;this.adopcionRepository = adopcionRepository;}
+    public AdopcionController(AdopcionService adopcionService){
+        this.adopcionService = adopcionService;
+    }
 
-    //GET por id
-    @GetMapping("/adopcion/{idAdopcion}")
-    public ResponseEntity<Adopcion> obtenerAdopcion(@PathVariable Long idAdopcion){
+    // GET - Obtener todas las adopciones
+    @GetMapping
+    public ResponseEntity<List<Adopcion>> obtenerAdopciones(){
+        List<Adopcion> adopciones = adopcionService.mostrarAdopciones();
+        return ResponseEntity.ok(adopciones);
+    }
 
-        Optional<Adopcion> adopcion = adopcionService.mostrarAdopcion(idAdopcion);
-
+    // GET - Obtener adopción por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Adopcion> obtenerAdopcion(@PathVariable Long id){
+        Optional<Adopcion> adopcion = adopcionService.mostrarAdopcion(id);
         if(adopcion.isPresent()){
             return ResponseEntity.ok(adopcion.get());
         }else{
             return ResponseEntity.notFound().build();
         }         
     }
-    //Get en Lista
-    @GetMapping("/adopciones")
-    public ResponseEntity<List<Adopcion>> obtenerAdopciones(){
-        List<Adopcion> adopciones = adopcionService.mostrarAdopciones();
-        return ResponseEntity.ok(adopciones);
-    }
 
-    //PUT ACTUALIZAR datos de adopcion
-    @PutMapping("actualizar-datos/{id}")
-    public ResponseEntity<Adopcion> actualizarAdopcion(@PathVariable Long id, @RequestBody Adopcion nueAdopcion){
-        Optional<Adopcion> adopcion =  adopcionService.actualizarAdopcion(id, nueAdopcion);
+    // PUT - Actualizar datos de adopción
+    @PutMapping("/{id}")
+    public ResponseEntity<Adopcion> actualizarAdopcion(@PathVariable Long id, @RequestBody Adopcion nuevosDatosAdopcion){
+        Optional<Adopcion> adopcion = adopcionService.actualizarAdopcion(id, nuevosDatosAdopcion);
         if(adopcion.isPresent()){
             return ResponseEntity.ok(adopcion.get());
         }else{
             return ResponseEntity.notFound().build();
         }
     }
-    //Eliminar Adopcion por ID
-    @DeleteMapping("borrar-adopcion/{id}")
+
+    // DELETE - Eliminar adopción por ID
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> borrarAdopcion(@PathVariable Long id){
         adopcionService.borrarAdopcion(id);
         return ResponseEntity.noContent().build();
     }
-
 }

@@ -24,8 +24,8 @@ public class SolicitudController {
 
     public SolicitudController (SolicitudService solicitudService){this.solicitudService = solicitudService;}
     
-    //Crear solicitud "Usuario_adoptante"
-    @PostMapping("/solicitud-mascota/{idMascota}")
+    // POST - Crear solicitud de adopción para una mascota
+    @PostMapping("/mascota/{idMascota}")
     public ResponseEntity<?> crearSolicitud(@PathVariable Long idMascota, @RequestBody java.util.Map<String, Object> datosSolicitud){
         try {
             // Obtener ID de usuario del body o usar un valor por defecto si no viene
@@ -51,8 +51,8 @@ public class SolicitudController {
         }
     }
 
-    //Aceptar Solicitud "Usuario_Resuelve"
-    @PutMapping("/decision-mascota/{idSolicitud}")
+    // PUT - Tomar decisión sobre una solicitud (aceptar/rechazar/cancelar)
+    @PutMapping("/{idSolicitud}/decision")
     public ResponseEntity<?> decisionSolicitud(@PathVariable Long idSolicitud, @RequestBody java.util.Map<String, Object> datosSolicitud){
         try {
             // Obtener ID de usuario del body
@@ -88,25 +88,22 @@ public class SolicitudController {
         }
     }
 
-    //Mostrar Solicitudes
-    @GetMapping("/solicitudes")
-    public ResponseEntity<List<SolicitudAdopcion>> mostrarSolicitudes(){
-        
-        List<SolicitudAdopcion> solicitud_adopcion = solicitudService.mostrarSolicitudes();
-        return ResponseEntity.ok(solicitud_adopcion);
+    // GET - Obtener todas las solicitudes
+    @GetMapping
+    public ResponseEntity<List<SolicitudAdopcion>> obtenerSolicitudes(){
+        List<SolicitudAdopcion> solicitudes = solicitudService.mostrarSolicitudes();
+        return ResponseEntity.ok(solicitudes);
     }
 
-    //Mostrar Solicitud
-    @GetMapping("/solicitud/{id}")
-    public ResponseEntity<SolicitudAdopcion> mostrarSolicitud(@PathVariable Long id){
-        
+    // GET - Obtener solicitud por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<SolicitudAdopcion> obtenerSolicitud(@PathVariable Long id){
         Optional<SolicitudAdopcion> solicitudAdopcion = solicitudService.mostrarSolicitud(id);
-
         if(solicitudAdopcion.isPresent()){
             return ResponseEntity.ok(solicitudAdopcion.get());
-        }else
+        }else {
             return ResponseEntity.notFound().build();
-        
+        }
     }
     
 

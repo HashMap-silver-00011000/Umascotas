@@ -75,8 +75,20 @@ public class ViewController {
     }
 
     // Vista para ver detalles de una mascota
-    @GetMapping("/ver-mascota/{id}")
+    @GetMapping("/mascota/{id}")
     public String verMascota() {
         return "view/ver-mascota";
+    }
+
+    // Vista para listar todas las adopciones
+    @GetMapping("/adopciones")
+    public String listarAdopciones() {
+        return "view/listar-adopciones";
+    }
+
+    // Vista para ver detalles de una adopción específica
+    @GetMapping("/adopcion/{id}")
+    public String verAdopcion() {
+        return "view/ver-adopcion";
     }
 }

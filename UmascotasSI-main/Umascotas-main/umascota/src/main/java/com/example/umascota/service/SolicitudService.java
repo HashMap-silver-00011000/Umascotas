@@ -101,14 +101,17 @@ public class SolicitudService {
                     Usuario adoptante = solicitudAdopcion.getUsuarioAdoptante();
 
                     if (mascota != null) {
+                        // Cambiar el estado de la mascota a ADOPTADA primero
+                        mascota.setStatusPublicacion(Mascota.StatusPublicacion.ADOPTADA);
+                        mascotaRepository.save(mascota);
+                        
+                        // Crear registro de adopción
                         Adopcion adopcion = new Adopcion();
                         adopcion.setAdoptante(adoptante);
                         adopcion.setMascota(mascota);
                         adopcion.setSolicitud(solicitudAdopcion);
                         adopcion.setFechaAdopcion(solicitudAdopcion.getFechaResolucion());
                         adopcionRepository.save(adopcion);
-                        mascota.setStatusPublicacion(Mascota.StatusPublicacion.ADOPTADA);
-                        mascotaRepository.save(mascota);
                     }
                 }
 

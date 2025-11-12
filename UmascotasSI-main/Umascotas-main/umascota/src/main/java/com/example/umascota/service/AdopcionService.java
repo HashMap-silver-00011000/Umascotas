@@ -31,15 +31,22 @@ public class AdopcionService {
     }
 
     //Borrar Adopcion
-
     public void borrarAdopcion(Long idAdopcion){
-
-        if(mascotaRepository.existsByIdMascota(idAdopcion)){
-            mascotaRepository.deleteById(idAdopcion);
+        if(adopcionRepository.existsByIdAdopcion(idAdopcion)){
+            // Obtener la adopción para actualizar el estado de la mascota
+            Optional<Adopcion> adopcionOpt = adopcionRepository.findByIdAdopcion(idAdopcion);
+            if(adopcionOpt.isPresent()){
+                Adopcion adopcion = adopcionOpt.get();
+                // Cambiar el estado de la mascota a DISPONIBLE cuando se borra la adopción
+                if(adopcion.getMascota() != null){
+                    adopcion.getMascota().setStatusPublicacion(com.example.umascota.model.mascota.Mascota.StatusPublicacion.DISPONIBLE);
+                    mascotaRepository.save(adopcion.getMascota());
+                }
+                adopcionRepository.deleteById(idAdopcion);
+            }
         }else{
             throw new IllegalArgumentException("La adopcion no esta registrada");
         }
-
     }
     //Actualizar datos de Adopcion
 
