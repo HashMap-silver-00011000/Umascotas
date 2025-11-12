@@ -8,6 +8,5 @@ import java.util.Optional;
 
 
 public interface SolicitudRepository extends JpaRepository<SolicitudAdopcion, Long> {
-
     Optional<SolicitudAdopcion> findByIdSolicitud(Long idSolicitud);
 }

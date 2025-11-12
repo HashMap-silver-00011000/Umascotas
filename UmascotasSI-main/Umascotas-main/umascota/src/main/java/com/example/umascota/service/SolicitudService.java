@@ -6,9 +6,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.umascota.model.adopcion.Adopcion;
 import com.example.umascota.model.adopcion.SolicitudAdopcion;
 import com.example.umascota.model.mascota.Mascota;
 import com.example.umascota.model.usuario.Usuario;
+import com.example.umascota.repository.AdopcionRepository;
 import com.example.umascota.repository.MascotaRepository;
 import com.example.umascota.repository.SolicitudRepository;
 import com.example.umascota.repository.UsuarioRepository;
@@ -26,6 +28,9 @@ public class SolicitudService {
     @Autowired
     public UsuarioRepository usuarioRepository;
 
+    @Autowired
+    public AdopcionRepository adopcionRepository;
+
 
 
     //Crear Solicitud, por defecto le llega al admin en PENDIENTE
@@ -33,6 +38,7 @@ public class SolicitudService {
 
         Optional<Usuario> usuario = usuarioRepository.findByIdUsuario(id_usuario_adoptante);
         Optional<Mascota> mascota = mascotaRepository.findByIdMascota(idMascota);
+
 
         if (usuario.isEmpty() || mascota.isEmpty()) {
             throw new RuntimeException("Usuario o Mascota no encontrados");
@@ -92,7 +98,15 @@ public class SolicitudService {
                 // Si la solicitud es ACEPTADA, actualizar el estado de la mascota a ADOPTADA
                 if (datoRespuesta.getEstadoSolicitud() == SolicitudAdopcion.EstadoSolicitud.ACEPTADA) {
                     Mascota mascota = solicitudAdopcion.getMascotaSolicitada();
+                    Usuario adoptante = solicitudAdopcion.getUsuarioAdoptante();
+
                     if (mascota != null) {
+                        Adopcion adopcion = new Adopcion();
+                        adopcion.setAdoptante(adoptante);
+                        adopcion.setMascota(mascota);
+                        adopcion.setSolicitud(solicitudAdopcion);
+                        adopcion.setFechaAdopcion(solicitudAdopcion.getFechaResolucion());
+                        adopcionRepository.save(adopcion);
                         mascota.setStatusPublicacion(Mascota.StatusPublicacion.ADOPTADA);
                         mascotaRepository.save(mascota);
                     }

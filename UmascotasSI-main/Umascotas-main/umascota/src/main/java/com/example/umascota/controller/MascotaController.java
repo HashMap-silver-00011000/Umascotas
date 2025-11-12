@@ -28,14 +28,14 @@ public class MascotaController {
 
     public MascotaController(Mascota2Service mascotaService){this.mascotaService = mascotaService;}
 
-    //GET - Endpoint REST estándar
+    //GET estandar
     @GetMapping
     public ResponseEntity<List<Mascota>> obtenerMascotas(){
         List<Mascota> mascotas = mascotaService.obtenerTodas();
         return ResponseEntity.ok(mascotas);
     }
 
-    //GET - Endpoint REST estándar por ID
+    //GET estándar por ID
     @GetMapping("/{id}")
     public ResponseEntity<Mascota> obtenerMascotaPorId(@PathVariable Long id){
         Optional<Mascota> mascota = mascotaService.obtenerPorId(id);
@@ -46,14 +46,14 @@ public class MascotaController {
         }
     }
 
-    //POST - Endpoint REST estándar
+    //POST 
     @PostMapping
     public ResponseEntity<Mascota> crearMascota(@RequestBody Mascota mascota){
         Mascota nuevaMascota = mascotaService.crearMascota(mascota);
         return new ResponseEntity<>(nuevaMascota, HttpStatus.CREATED);
     }
 
-    //GET - Endpoint legacy
+    //GET
     @GetMapping("/obtener-mascota/{id}")
     public ResponseEntity<Mascota> obtenerMascota(@PathVariable Long id){
         Optional <Mascota> mascota = mascotaService.obtenerPorId(id);
@@ -73,7 +73,7 @@ public class MascotaController {
         return ResponseEntity.noContent().build();
     }
 
-    //DELETE - Endpoint legacy
+    //DELETE -
     @DeleteMapping("/borrar-mascota/{idMascota}")
     public ResponseEntity<Void> borrarMascota(@PathVariable Long idMascota){
         mascotaService.borrarMascota(idMascota);
